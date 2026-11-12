@@ -6,6 +6,9 @@ This file tracks all major tracks for the project.
 
 ## Tracks
 
+- [ ] **Track: RPN-2: walking skeleton — migrations and health**
+*Link: [./tracks/walking-skeleton_20261112/](./tracks/walking-skeleton_20261112/)*
+
 ---
 
 ## Backlog
@@ -16,4 +19,3 @@ scope: gluon `PLAN.md` "Rust Port — notification-service" (ADR 0029). One trac
 session, outside-in (each harness group in `tests/contract` first), each ending with a
 review. When ready, run `/conductor:newTrack <title>`.
 
-- RPN-2: walking skeleton — migrations and health
