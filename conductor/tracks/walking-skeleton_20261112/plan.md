@@ -1,27 +1,21 @@
 # Plan — RPN-2: walking skeleton — migrations and health
 
-## Phase 1: Workspace, config, liveness
-- [ ] Task: Cargo workspace and `scripts/ci.sh`
-  - [ ] Workspace as user-service-rs; `.github/workflows/ci.yml` calls `ci.sh`
-- [ ] Task: Config contract
-  - [ ] Red: `tests/config.rs` (defaults, overrides, every bad port reported)
-  - [ ] Green: `config.rs`
-- [ ] Task: Serve `/health`, exit 0 on SIGTERM
-  - [ ] Red: `tests/health.rs` against the started binary
-  - [ ] Green: `server.rs`, `main.rs`
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+Done on the laptop (2026-11-12): the sandbox session didn't run
+`bin/sandbox-save`. Tests were written alongside the code rather than seen
+red first; instead two mutations (no HEAD 405, ping bounded at 30 s) were
+seen failing `tests/health.rs` and `tests/readiness.rs`.
 
-## Phase 2: Migrations and readiness
-- [ ] Task: V1/V2 as sqlx migrations
-  - [ ] Red: `tests/schema.rs` (`sent_email` columns and constraints); unreachable database → exit 1
-  - [ ] Green: `db.rs`, migrations
-- [ ] Task: `/health/ready` bounded at 2 s; HEAD 405
-  - [ ] Red: `tests/readiness.rs` (stopped, paused, back)
-  - [ ] Green: ping in `server.rs`
-- [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
+## Phase 1: Workspace, config, migrations, health [checkpoint: f7bc264]
+- [x] Task: Cargo workspace and `scripts/ci.sh` (fmt, clippy, coverage 92% lines, cargo audit ran) `f7bc264`
+- [x] Task: Config contract (`tests/config.rs`) `f7bc264`
+- [x] Task: `/health`, 404/405 text errors, exit 0 on SIGTERM (`tests/health.rs`) `f7bc264`
+- [x] Task: V1/V2 as sqlx migrations; unreachable database → exit 1 (`tests/schema.rs`) `f7bc264`
+- [x] Task: `/health/ready` bounded at 2 s: stopped, paused, back (`tests/readiness.rs`) `f7bc264`
 
-## Phase 3: Checks against the capture
-- [ ] Task: `scripts/verify-skeleton.sh` reading the capture; failure path seen once
-- [ ] Task: `tests/contract` implicit-behaviours N2 (Connection header)
-- [ ] Task: gluon `bin/verify-complete-RPN-2.sh` PASS
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+## Phase 2: Checks against the capture [checkpoint: 949d53c]
+- [x] Task: `scripts/verify-skeleton.sh` reading the capture: PASS 8 checks; failure path seen once (broken copy: both files named, exit 1) `949d53c`
+- [x] Task: `tests/contract` implicit-behaviours N2 (Connection header) `4cdcf38` (tests/contract)
+- [x] Task: gluon `bin/verify-complete-RPN-2.sh` PASS (run after archive)
+
+## Phase: Review
+- [x] Task: Self-review (prompting off): no findings needing changes
