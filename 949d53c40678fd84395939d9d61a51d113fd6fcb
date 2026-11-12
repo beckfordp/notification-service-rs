@@ -1,0 +1,3 @@
+Task: scripts/verify-skeleton.sh
+Reads capture tests/contract/contracts/notification-service/20261111 directly: GET /health, GET /health/ready, HEAD /health vs http/*.txt (status, headers bar Date/Connection, body); pg_dump -t sent_email vs db/schema.sql; SIGTERM exit 0. scripts/lib/verify.sh copied from user-service-rs (no contract_checks).
+PASS 8 checks; failure path: broken copy (Content-Length 17, status check 'gone') -> both FAIL named with diffs, exit 1.
