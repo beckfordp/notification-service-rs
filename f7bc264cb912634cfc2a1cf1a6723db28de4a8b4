@@ -1,0 +1,7 @@
+Task: RPN-2 workspace, config, migrations, health/readiness
+Cargo workspace as user-service-rs (toolchain 1.99.1, lints, clippy.toml, .cargo/audit.toml); crate notification-service, binary notification-service; axum + sqlx only.
+scripts/ci.sh: fmt, clippy -D warnings, llvm-cov >= 80% lines (92%), cargo audit (ran on laptop, clean). GitHub Actions calls ci.sh, PostgreSQL 16 binaries on PATH.
+Config: NOTIFICATION_SERVICE_PORT, POSTGRES_* with Scala application.conf defaults; every bad port reported, exit 1.
+Migrations: Scala V1/V2 verbatim as sqlx 1_/2_.
+/health 200 empty; /health/ready ping bounded 2 s (503 on stopped or paused Postgres); HEAD 405 text/plain charset=UTF-8 len 18, no Allow; 404 'Not found'; SIGTERM exit 0; unreachable DB exit 1.
+Tests: config, health, schema, readiness (stop, pause via kill -STOP, back). Written alongside code, not red-first: mutations (drop HEAD 405, ping bound 30 s) seen failing.
