@@ -6,9 +6,6 @@ This file tracks all major tracks for the project.
 
 ## Tracks
 
-- [ ] **Track: RPN-2: walking skeleton — migrations and health**
-*Link: [./tracks/walking-skeleton_20261112/](./tracks/walking-skeleton_20261112/)*
-
 ---
 
 ## Backlog
