@@ -7,7 +7,9 @@ inward). It is a drop-in replacement: same REST, docs, Kafka consumers, DLQs,
 schema, config and observability contracts. The Scala service stays the
 default.
 
-**Status (2026-11-12):** empty repo (RPN-L0). The walking skeleton is RPN-2.
+**Status (2026-11-12):** walking skeleton (RPN-2): migrates `sent_email`,
+answers `/health` and `/health/ready`; `scripts/ci.sh`,
+`scripts/verify-skeleton.sh`.
 Work is planned in [`conductor/tracks.md`](./conductor/tracks.md) and
 sequenced in gluon [`PLAN.md`](../../PLAN.md) "Rust Port —
 notification-service". The reference behaviour is the capture

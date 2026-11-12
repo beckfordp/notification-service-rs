@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "notification-service"
+description = "The notification-service binary: the wire-compatible port of the Scala notification-service (gluon ADR 0029)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+axum = "0.8"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "migrate", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time"] }
+
+[dev-dependencies]
+tempfile = "3"
+ureq = "3"
