@@ -11,7 +11,7 @@ gluon-local by an implementation switch; the Scala service stays the default.
 Full cross-repo vision lives in the `gluon` platform repo, not here:
 [`../../../docs/adr/0029-after-the-rust-spike.md`](../../../docs/adr/0029-after-the-rust-spike.md)
 (the decision this repo exists for),
-[`../../../docs/rust-spike-findings.md`](../../../docs/rust-spike-findings.md)
+[`../../../docs/ports/user-service-findings.md`](../../../docs/ports/user-service-findings.md)
 (what the first port taught, and the exit criteria),
 [`../../../docs/system-design.md`](../../../docs/system-design.md),
 [`../../../PLAN.md`](../../../PLAN.md) ("Rust Port — notification-service").
