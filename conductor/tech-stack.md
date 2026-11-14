@@ -76,4 +76,6 @@ here is added to gluon `bin/sandbox-setup` in the same change.
   `notification-service-rs:latest`; deployed by gluon's generic Helm chart
   under the release `notification-service` with an implementation switch in
   `bin/k8s-local-up`.
-- CI: `scripts/ci.sh`, run directly in the sandbox and by GitHub Actions.
+- CI: `scripts/ci.sh`, run directly in the sandbox, on the laptop and by
+  GitHub Actions: gluon-rs's shared steps (`scripts/lib/ci.sh`, Linux and
+  macOS; `GLUON_RS` overrides `../../lib/gluon-rs`).
