@@ -81,9 +81,10 @@ not imitated.
   no Docker).
 - Wire parity is proven by the gluon `tests/contract` harness, not by
   re-implementing its checks here. Exception *(2026-11-14, gluon TD-46)*: what
-  the harness doesn't check yet (TD-42: the health exchanges, the
-  `sent_email` DDL) may be compared with capture files copied unchanged into
-  `tests/fixtures`; once the harness checks it, the copy and its test go.
+  the harness doesn't check yet (the `sent_email` DDL) may be compared with
+  capture files copied unchanged into `tests/fixtures`; once the harness checks
+  it, the copy and its test go. *(2026-11-14, gluon TD-42: the health exchanges
+  went to the harness, and their copies with them.)*
 
 ## Review checklist
 Reviewers check each change against these; any "no" is a **High** finding.

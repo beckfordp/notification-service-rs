@@ -1,2 +1,0 @@
-# Capture files stay byte for byte (CRLF), as in tests/contract
-crates/notification-service/tests/fixtures/http/*.txt -text

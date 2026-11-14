@@ -6,7 +6,6 @@
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::collections::HashMap;
-use std::fmt::Write as _;
 use std::io::Read;
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
@@ -246,30 +245,6 @@ pub fn canon_ddl(dump: &str) -> Vec<String> {
     statements
 }
 
-/// An HTTP exchange as compared with a capture file: the status line, the
-/// headers bar `date` and `connection` (hop-by-hop: tests/contract implicit
-/// behaviour N2) as lower-case `name: value` sorted, a blank line, the body.
-/// A capture's curl trailer (`--` then `elapsed=`) is dropped.
-pub fn canon_exchange(raw: &str) -> String {
-    let text = raw.replace("\r\n", "\n");
-    let exchange = text.split("\n--\nelapsed=").next().unwrap_or_default();
-    let (head, body) = exchange.split_once("\n\n").unwrap_or((exchange, ""));
-    let mut lines = head.lines();
-    let status = lines.next().unwrap_or_default().trim().to_owned();
-    let mut headers: Vec<String> = lines
-        .filter_map(|line| line.split_once(':'))
-        .map(|(name, value)| (name.trim().to_lowercase(), value.trim().to_owned()))
-        .filter(|(name, _)| name != "date" && name != "connection")
-        .map(|(name, value)| format!("{name}: {value}"))
-        .collect();
-    headers.sort();
-    format!(
-        "{status}\n{}\n\n{}",
-        headers.join("\n"),
-        body.trim_end_matches('\n')
-    )
-}
-
 impl Drop for Postgres {
     fn drop(&mut self) {
         self.signal_all("-CONT");
@@ -476,23 +451,6 @@ impl Service {
             response.body_mut().read_to_string().unwrap()
         };
         (response.status().as_u16(), received, text)
-    }
-
-    /// `method path` written out as curl `-i` shows it: status line (the
-    /// standard reason phrase, which hyper sends), headers, blank line, body.
-    pub fn exchange(&self, method: &str, path: &str) -> String {
-        let (status, headers, body) = self.request(method, path, &[]);
-        let reason = ureq::http::StatusCode::from_u16(status)
-            .unwrap()
-            .canonical_reason()
-            .unwrap_or_default();
-        let mut text = format!("HTTP/1.1 {status} {reason}\r\n");
-        for (name, value) in &headers {
-            write!(text, "{name}: {value}\r\n").unwrap();
-        }
-        text.push_str("\r\n");
-        text.push_str(&body);
-        text
     }
 
     /// Waits for the process to exit by itself.
