@@ -8,8 +8,8 @@ A refactor: the existing tests are the guard, run before and after each task.
       (guard: `tests/health.rs`, `tests/readiness.rs`)
 - [x] Task: `tests/support` onto service-testing 8b73b64
 - [x] Task: TD-47: the pool size cites the Scala source b104cb6
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
-    - [ ] `scripts/ci.sh` green
-    - [ ] `git grep 'as user-service-rs'` empty
-    - [ ] `tests/contract` `verify-check-group.sh checks/test_notification_rest.py
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+    - [x] `scripts/ci.sh` green
+    - [x] `git grep 'as user-service-rs'` empty
+    - [x] `tests/contract` `verify-check-group.sh checks/test_notification_rest.py
           --service notification-service`: 5 green, 19 red
