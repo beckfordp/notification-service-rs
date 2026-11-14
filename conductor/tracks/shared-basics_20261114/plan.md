@@ -4,7 +4,7 @@ A refactor: the existing tests are the guard, run before and after each task.
 
 ## Phase 1: onto gluon-rs
 - [x] Task: Path dependencies, `config` and `main` (guard: `tests/config.rs`) 639ea7c
-- [ ] Task: `db` and `server` onto `postgres`, `health` and `text_error`
+- [x] Task: `db` and `server` onto `postgres`, `health` and `text_error` c334373
       (guard: `tests/health.rs`, `tests/readiness.rs`)
 - [ ] Task: `tests/support` onto service-testing
 - [ ] Task: TD-47: the pool size cites the Scala source
