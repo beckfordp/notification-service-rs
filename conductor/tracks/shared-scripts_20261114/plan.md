@@ -1,6 +1,6 @@
 # Plan — CI on gluon-rs's shared steps, Linux and macOS (gluon TD-43.2)
 
-## Phase 1: shared CI steps
+## Phase 1: shared CI steps [checkpoint: 8ac7ce7]
 - [x] Task: `scripts/ci.sh` on gluon-rs's library; drop `scripts/lib/verify.sh` 14435c3
     - [x] Red: on a stock-macOS PATH, ci.sh says "SKIP cargo-audit: advisory
           database unreachable" with the database reachable
