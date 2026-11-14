@@ -1,6 +1,6 @@
 # Plan — retire-scripts (gluon TD-46)
 
-## Phase 1: Acceptance and coverage map
+## Phase 1: Acceptance and coverage map [checkpoint: 129b8cf]
 - [x] Task: `scripts/verify-retire-scripts.sh`, red `740ad40` — 7 of 9 failed: fixtures absent, script present and named by README, no rule; ci.sh green (92.36%)
   - [x] Checks: verify-skeleton.sh gone; no `git grep` hits outside `conductor/archive`; fixtures present and `cmp`-equal to tests/contract capture 20261111; `lib/verify.sh` present and `bash -n` clean; rule in workflow.md; `scripts/ci.sh` green
   - [x] Run: red for the stated reasons
