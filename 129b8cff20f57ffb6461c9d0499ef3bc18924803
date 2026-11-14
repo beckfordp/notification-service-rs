@@ -1,0 +1,1 @@
+Phase 1 verification (prompt off): verify-retire-scripts.sh red 7/9 for the stated reasons; ci.sh green 92.36%. Coverage map: sections 1, 2, 5 covered; 3 and 4 (capture equality) are Phase 2's tests.
