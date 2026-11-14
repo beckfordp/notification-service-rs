@@ -1,0 +1,1 @@
+Task: verify-retire-scripts.sh (retire-scripts_20261114, Phase 1). Checks: 4 fixtures cmp-equal to capture 20261111, verify-skeleton.sh gone and unreferenced (archives, this track and tracks.md excluded), lib/verify.sh kept, workflow.md rule, ci.sh green. Red 7 of 9: fixtures absent, script present + README names it, no rule; ci.sh green (92.36%).
