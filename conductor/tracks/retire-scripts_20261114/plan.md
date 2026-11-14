@@ -27,10 +27,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: Retire and rule
-- [ ] Task: delete `scripts/verify-skeleton.sh`; live references updated (README, conductor docs)
-- [ ] Task: `conductor/workflow.md` Phase Completion step 4: retirement rule
-- [ ] Task: `verify-retire-scripts.sh` PASS; failure path proven on a copy
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+- [x] Task: delete `scripts/verify-skeleton.sh`; live references updated (README, conductor docs) `b5d2b97`
+- [x] Task: `conductor/workflow.md` Phase Completion step 4: retirement rule `b5d2b97`
+- [x] Task: `verify-retire-scripts.sh` PASS; failure path proven on a copy — PASS 9 checks (ci.sh 92.36%); copy citing a missing fixture: exit 1, file named
+- [x] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
 
 At archive: `verify-retire-scripts.sh` deleted (per the rule). gluon follow-up: TD-46.1 `[x]`; TD-39 note (canon_http here gone); tests/contract `docs/implicit-behaviours.md` N2 and health row; TD-42 text.
 
