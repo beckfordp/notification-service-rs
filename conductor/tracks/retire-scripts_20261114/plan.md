@@ -16,15 +16,15 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: Into CI (TDD)
-- [ ] Task: fixtures: copy the four capture files into `crates/notification-service/tests/fixtures/` (+ a README line citing capture 20261111)
-- [ ] Task: `tests/capture.rs`: health exchanges equal to the capture
-  - [ ] Red: the test against a mutated fixture (a header value) fails, naming the header
-  - [ ] Green: canonical form (status, sorted lower-case headers without date and connection, body) as a helper in `tests/support`
-- [ ] Task: `tests/capture.rs`: pg_dump sent_email DDL equal to `db/schema.sql`
-  - [ ] Red: a mutated DDL line fails
-  - [ ] Green: `Postgres::pg_dump` in support (`pg_bin()`), `canon_ddl` in Rust
-- [ ] Task: `scripts/ci.sh` green, coverage ≥ 80%
-- [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
+- [x] Task: fixtures: copy the four capture files into `crates/notification-service/tests/fixtures/` (+ a README line citing capture 20261111) `5b29fc9`, CRLF kept `a90cd8e` (`.gitattributes` `-text`: `core.autocrlf=input` had stored them LF)
+- [x] Task: `tests/capture.rs`: health exchanges equal to the capture `f321916`
+  - [x] Red: the test against a mutated fixture (a header value) fails, naming the header — red first: helpers missing; HEAD fixture `Content-Length: 18` → `17` fails, both sides shown
+  - [x] Green: canonical form (status, sorted lower-case headers without date and connection, body) as a helper in `tests/support` — `canon_exchange`, `Service::exchange` (status line from the code's standard reason phrase)
+- [x] Task: `tests/capture.rs`: pg_dump sent_email DDL equal to `db/schema.sql` `f321916`
+  - [x] Red: a mutated DDL line fails — `reason text` → `character varying` fails
+  - [x] Green: `Postgres::pg_dump` in support (`pg_bin()`), `canon_ddl` in Rust — local PG 16.15 = capture's
+- [x] Task: `scripts/ci.sh` green, coverage ≥ 80% — 92.36% lines
+- [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: Retire and rule
 - [ ] Task: delete `scripts/verify-skeleton.sh`; live references updated (README, conductor docs)
