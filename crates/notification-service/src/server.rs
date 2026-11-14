@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-//! The HTTP server: routes, binding and graceful shutdown.
+//! The HTTP server: routes, binding and graceful shutdown. The health routes
+//! and tapir's plain-text errors are gluon-rs `service-basics`.
 
 use std::future::Future;
 use std::io;
@@ -8,62 +9,37 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 
 use axum::Router;
-use axum::extract::State;
-use axum::http::{StatusCode, header};
-use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use service_basics::health::{self, Readiness};
+use service_basics::postgres;
+use service_basics::text_error::{method_not_allowed, not_found};
 use sqlx::PgPool;
 use tokio::net::TcpListener;
-
-use crate::db;
 
 /// How long readiness waits for Postgres to answer.
 const READY_PING: Duration = Duration::from_secs(2);
 
-/// Exactly what the Scala service sends for text errors (not axum's `utf-8`).
-const TEXT_PLAIN: &str = "text/plain; charset=UTF-8";
+/// What the handlers share.
+#[derive(Clone)]
+pub struct AppState {
+    /// The service's database.
+    pub pool: PgPool,
+}
 
-/// The service's routes.
+/// Ready when Postgres answers a ping within 2 s (capture
+/// `http/health-ready*.txt`).
+impl Readiness for AppState {
+    async fn ready(&self) -> bool {
+        postgres::ping(&self.pool, READY_PING).await.is_ok()
+    }
+}
+
+/// The service's routes: the health routes, and tapir's 405 for a known path
+/// with another method, 404 for any other (capture `http/unknown-path.txt`).
 pub fn router(pool: PgPool) -> Router {
-    Router::new()
-        .route("/health", get(health).head(method_not_allowed))
-        .route("/health/ready", get(ready).head(method_not_allowed))
+    health::routes()
         .method_not_allowed_fallback(method_not_allowed)
         .fallback(not_found)
-        .with_state(pool)
-}
-
-/// A framework error as tapir writes it: plain text.
-fn text_error(status: StatusCode, message: &'static str) -> Response {
-    (status, [(header::CONTENT_TYPE, TEXT_PLAIN)], message).into_response()
-}
-
-/// 405, as tapir answers a known path with another method. HEAD included:
-/// tapir doesn't answer HEAD for a GET endpoint (capture
-/// `http/health-head.txt`).
-async fn method_not_allowed() -> Response {
-    text_error(StatusCode::METHOD_NOT_ALLOWED, "Method Not Allowed")
-}
-
-/// 404 for any unknown path (capture `http/unknown-path.txt`).
-async fn not_found() -> Response {
-    text_error(StatusCode::NOT_FOUND, "Not found")
-}
-
-/// `GET /health`: 200 with an empty body while the process is up; checks no
-/// dependencies (capture `http/health.txt`: no Content-Type).
-async fn health() -> StatusCode {
-    StatusCode::OK
-}
-
-/// `GET /health/ready`: 200 when Postgres answers a ping within 2 s, 503 when
-/// it doesn't (capture `http/health-ready*.txt`); empty body either way.
-async fn ready(State(pool): State<PgPool>) -> StatusCode {
-    if db::ping(&pool, READY_PING).await {
-        StatusCode::OK
-    } else {
-        StatusCode::SERVICE_UNAVAILABLE
-    }
+        .with_state(AppState { pool })
 }
 
 /// Serves the API on `0.0.0.0:<port>` until `shutdown` completes.
