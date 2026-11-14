@@ -1,0 +1,1 @@
+Phase 3 verification (prompt off): scripts/verify-retire-scripts.sh PASS 9 checks, ci.sh 92.36%; failure path on a copy (an absent fixture) exit 1 naming it.
