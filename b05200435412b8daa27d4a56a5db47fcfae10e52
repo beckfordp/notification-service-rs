@@ -1,0 +1,1 @@
+Review fix (High): rust.md section 8 says wire parity is the harness's; tests/capture.rs compares with vendored capture files. Exception stated: allowed for what the harness doesn't check yet (TD-42), removed once it does. Same line due in user-service-rs's rust.md (its asyncapi fixture test), a gluon-root follow-up.
