@@ -2,7 +2,7 @@
 
 A refactor: the existing tests are the guard, run before and after each task.
 
-## Phase 1: onto gluon-rs
+## Phase 1: onto gluon-rs [checkpoint: ea7a35c]
 - [x] Task: Path dependencies, `config` and `main` (guard: `tests/config.rs`) 639ea7c
 - [x] Task: `db` and `server` onto `postgres`, `health` and `text_error` c334373
       (guard: `tests/health.rs`, `tests/readiness.rs`)
