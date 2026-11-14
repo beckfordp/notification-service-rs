@@ -6,6 +6,7 @@
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::io::Read;
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
@@ -485,11 +486,13 @@ impl Service {
             .unwrap()
             .canonical_reason()
             .unwrap_or_default();
-        let headers: String = headers
-            .iter()
-            .map(|(name, value)| format!("{name}: {value}\r\n"))
-            .collect();
-        format!("HTTP/1.1 {status} {reason}\r\n{headers}\r\n{body}")
+        let mut text = format!("HTTP/1.1 {status} {reason}\r\n");
+        for (name, value) in &headers {
+            write!(text, "{name}: {value}\r\n").unwrap();
+        }
+        text.push_str("\r\n");
+        text.push_str(&body);
+        text
     }
 
     /// Waits for the process to exit by itself.
