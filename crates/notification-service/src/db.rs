@@ -7,7 +7,8 @@ use sqlx::PgPool;
 
 use crate::config::PostgresConfig;
 
-/// Connections in the pool, as user-service-rs.
+/// Connections in the pool, as the Scala service's skunk pool
+/// (`SentEmailStore`: `.pooled(max = 10)`).
 const POOL_SIZE: u32 = 10;
 
 /// Connects the pool (one connection is opened now, so a wrong address fails at startup).
