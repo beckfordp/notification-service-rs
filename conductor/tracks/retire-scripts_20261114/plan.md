@@ -15,7 +15,7 @@
   | 5 SIGTERM exits 0 | `tests/health.rs` `sigterm_exits_0` |
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
-## Phase 2: Into CI (TDD)
+## Phase 2: Into CI (TDD) [checkpoint: 0e28d22]
 - [x] Task: fixtures: copy the four capture files into `crates/notification-service/tests/fixtures/` (+ a README line citing capture 20261111) `5b29fc9`, CRLF kept `a90cd8e` (`.gitattributes` `-text`: `core.autocrlf=input` had stored them LF)
 - [x] Task: `tests/capture.rs`: health exchanges equal to the capture `f321916`
   - [x] Red: the test against a mutated fixture (a header value) fails, naming the header — red first: helpers missing; HEAD fixture `Content-Length: 18` → `17` fails, both sides shown
