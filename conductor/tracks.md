@@ -6,7 +6,7 @@ This file tracks all major tracks for the project.
 
 ## Tracks
 
-- [~] **Track: CI on gluon-rs's shared steps, Linux and macOS (gluon TD-43.2)**
+- [x] **Track: CI on gluon-rs's shared steps, Linux and macOS (gluon TD-43.2)**
   *Link: [./tracks/shared-scripts_20261114/](./tracks/shared-scripts_20261114/)*
 
 ---
