@@ -1,11 +1,19 @@
 # Plan — retire-scripts (gluon TD-46)
 
 ## Phase 1: Acceptance and coverage map
-- [ ] Task: `scripts/verify-retire-scripts.sh`, red
-  - [ ] Checks: verify-skeleton.sh gone; no `git grep` hits outside `conductor/archive`; fixtures present and `cmp`-equal to tests/contract capture 20261111; `lib/verify.sh` present and `bash -n` clean; rule in workflow.md; `scripts/ci.sh` green
-  - [ ] Run: red for the stated reasons
-- [ ] Task: coverage map in this plan: each verify-skeleton.sh section → test or ci.sh step; gaps (§3, §4) named as Phase 2 tests
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: `scripts/verify-retire-scripts.sh`, red `740ad40` — 7 of 9 failed: fixtures absent, script present and named by README, no rule; ci.sh green (92.36%)
+  - [x] Checks: verify-skeleton.sh gone; no `git grep` hits outside `conductor/archive`; fixtures present and `cmp`-equal to tests/contract capture 20261111; `lib/verify.sh` present and `bash -n` clean; rule in workflow.md; `scripts/ci.sh` green
+  - [x] Run: red for the stated reasons
+- [x] Task: coverage map in this plan: each verify-skeleton.sh section → test or ci.sh step; gaps (§3, §4) named as Phase 2 tests
+
+  | verify-skeleton.sh § | Covered by |
+  |---|---|
+  | 1 CI | `scripts/ci.sh` |
+  | 2 serves on its port (build, throwaway Postgres) | `tests/health.rs` `health_is_200_with_no_body_and_no_content_type` (support `Service::start` builds and waits) |
+  | 3 health exchanges = capture `http/health.txt`, `health-ready.txt`, `health-head.txt` | **gap** → `tests/capture.rs` against vendored fixtures (today's tests assert hardcoded values) |
+  | 4 `pg_dump -t sent_email` = capture `db/schema.sql` | **gap** → `tests/capture.rs` (`tests/schema.rs` checks columns and the status check, not the whole DDL) |
+  | 5 SIGTERM exits 0 | `tests/health.rs` `sigterm_exits_0` |
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: Into CI (TDD)
 - [ ] Task: fixtures: copy the four capture files into `crates/notification-service/tests/fixtures/` (+ a README line citing capture 20261111)
