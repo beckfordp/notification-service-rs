@@ -1,0 +1,1 @@
+Phase 2 verification (prompt off): ci.sh green (fmt, clippy -D warnings, tests, 92.36% lines). tests/capture.rs 2 passed; each red on a mutation. Fixtures in HEAD byte-equal to capture 20261111 (git show | cmp).
