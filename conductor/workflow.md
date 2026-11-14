@@ -89,6 +89,7 @@ All tasks follow a strict lifecycle:
     -   If tests fail, you **must** inform the user and begin debugging. You may attempt to propose a fix a **maximum of two times**. If the tests still fail after your second proposed fix, you **must stop**, report the persistent failure, and ask the user for guidance.
 
 4.  **Propose a Detailed, Actionable Manual Verification Plan:**
+    -   **Retiring the script** *(2026-11-14, gluon TD-46)*: with prompting off, a phase's verification is a committed `scripts/verify-<track>.sh` (sourcing `scripts/lib/verify.sh`). The script is the track's acceptance test, not a regression suite. When the track is archived, map each section to what covers it: a section a harness check or CI already covers needs nothing; one CI could run moves into CI (a Rust test or a `scripts/ci.sh` step); only what CI can't run (the live world, scratch-copy mutations, the laptop) stays, in a script gluon `bin/verify-port` runs. A script with nothing left is deleted with the archive commit. Shared tools (`scripts/lib/verify.sh`, …) aren't track scripts.
     -   **CRITICAL:** To generate the plan, first analyze `product.md`, `product-guidelines.md`, and `plan.md` to determine the user-facing goals of the completed phase.
     -   You **must** generate a step-by-step plan that walks the user through the verification process, including any necessary commands and specific, expected outcomes. For a backend change, e.g.:
         ```

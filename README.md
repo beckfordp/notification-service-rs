@@ -8,8 +8,9 @@ schema, config and observability contracts. The Scala service stays the
 default.
 
 **Status (2026-11-12):** walking skeleton (RPN-2): migrates `sent_email`,
-answers `/health` and `/health/ready`; `scripts/ci.sh`,
-`scripts/verify-skeleton.sh`.
+answers `/health` and `/health/ready`; `scripts/ci.sh` (its `tests/capture.rs`
+compares the health exchanges and schema with the capture, vendored in
+`crates/notification-service/tests/fixtures`).
 Work is planned in [`conductor/tracks.md`](./conductor/tracks.md) and
 sequenced in gluon [`PLAN.md`](../../PLAN.md) "Rust Port —
 notification-service". The reference behaviour is the capture

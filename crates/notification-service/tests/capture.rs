@@ -2,7 +2,7 @@
 
 //! The walking skeleton's health exchanges and `sent_email` schema equal the
 //! Scala service's (capture 20261111, vendored unchanged in `tests/fixtures`;
-//! was `scripts/verify-skeleton.sh`, gluon TD-46).
+//! moved from the walking skeleton's track script, gluon TD-46).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
