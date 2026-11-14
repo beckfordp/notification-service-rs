@@ -13,3 +13,6 @@ A refactor: the existing tests are the guard, run before and after each task.
     - [x] `git grep 'as user-service-rs'` empty
     - [x] `tests/contract` `verify-check-group.sh checks/test_notification_rest.py
           --service notification-service`: 5 green, 19 red
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions 8477cf3
