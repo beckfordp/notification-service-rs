@@ -16,9 +16,7 @@ workspace = true
 service-basics = { path = "../../../../lib/gluon-rs/crates/service-basics" }
 axum = "0.8"
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "migrate", "macros"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time"] }
+tokio = { version = "1", features = ["net"] }
 
 [dev-dependencies]
 service-testing = { path = "../../../../lib/gluon-rs/crates/service-testing" }
-tempfile = "3"
-ureq = "3"

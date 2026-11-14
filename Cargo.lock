@@ -844,9 +844,7 @@ dependencies = [
  "service-basics",
  "service-testing",
  "sqlx",
- "tempfile",
  "tokio",
- "ureq",
 ]
 
 [[package]]
