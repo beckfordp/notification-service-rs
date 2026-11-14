@@ -35,3 +35,6 @@
 At archive: `verify-retire-scripts.sh` deleted (per the rule). gluon follow-up: TD-46.1 `[x]`; TD-39 note (canon_http here gone); tests/contract `docs/implicit-behaviours.md` N2 and health row; TD-42 text.
 
 Risks: pg_dump output can differ by Postgres version (capture taken on PG 16; the local binaries may be newer). canon_ddl drops SET/comment lines; if the statements still differ, compare via `information_schema` instead and record it.
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions b052004
