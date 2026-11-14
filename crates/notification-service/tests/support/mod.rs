@@ -207,6 +207,66 @@ impl Postgres {
         );
         String::from_utf8(output.stdout).unwrap()
     }
+
+    /// `pg_dump --schema-only --no-owner -t table`, as the capture's `db/schema.sql`.
+    pub fn pg_dump(&self, table: &str) -> String {
+        let output = Command::new(self.bin.join("pg_dump"))
+            .args(["-s", "--no-owner", "-t", table, "-h", self.socket_dir()])
+            .args(["-p", &self.port.to_string(), "-U", "user", "user"])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8(output.stdout).unwrap()
+    }
+}
+
+/// A `pg_dump`'s statements about `sent_email`, whitespace collapsed and
+/// sorted: no comments, `\restrict`, settings or ownership.
+pub fn canon_ddl(dump: &str) -> Vec<String> {
+    let kept: Vec<&str> = dump
+        .lines()
+        .filter(|line| {
+            !["--", "\\", "SET ", "SELECT pg_catalog."]
+                .iter()
+                .any(|prefix| line.starts_with(prefix))
+        })
+        .collect();
+    let mut statements: Vec<String> = kept
+        .join("\n")
+        .split(';')
+        .map(|statement| statement.split_whitespace().collect::<Vec<_>>().join(" "))
+        .filter(|statement| statement.contains("sent_email") && !statement.contains(" OWNER TO "))
+        .collect();
+    statements.sort();
+    statements
+}
+
+/// An HTTP exchange as compared with a capture file: the status line, the
+/// headers bar `date` and `connection` (hop-by-hop: tests/contract implicit
+/// behaviour N2) as lower-case `name: value` sorted, a blank line, the body.
+/// A capture's curl trailer (`--` then `elapsed=`) is dropped.
+pub fn canon_exchange(raw: &str) -> String {
+    let text = raw.replace("\r\n", "\n");
+    let exchange = text.split("\n--\nelapsed=").next().unwrap_or_default();
+    let (head, body) = exchange.split_once("\n\n").unwrap_or((exchange, ""));
+    let mut lines = head.lines();
+    let status = lines.next().unwrap_or_default().trim().to_owned();
+    let mut headers: Vec<String> = lines
+        .filter_map(|line| line.split_once(':'))
+        .map(|(name, value)| (name.trim().to_lowercase(), value.trim().to_owned()))
+        .filter(|(name, _)| name != "date" && name != "connection")
+        .map(|(name, value)| format!("{name}: {value}"))
+        .collect();
+    headers.sort();
+    format!(
+        "{status}\n{}\n\n{}",
+        headers.join("\n"),
+        body.trim_end_matches('\n')
+    )
 }
 
 impl Drop for Postgres {
@@ -415,6 +475,21 @@ impl Service {
             response.body_mut().read_to_string().unwrap()
         };
         (response.status().as_u16(), received, text)
+    }
+
+    /// `method path` written out as curl `-i` shows it: status line (the
+    /// standard reason phrase, which hyper sends), headers, blank line, body.
+    pub fn exchange(&self, method: &str, path: &str) -> String {
+        let (status, headers, body) = self.request(method, path, &[]);
+        let reason = ureq::http::StatusCode::from_u16(status)
+            .unwrap()
+            .canonical_reason()
+            .unwrap_or_default();
+        let headers: String = headers
+            .iter()
+            .map(|(name, value)| format!("{name}: {value}\r\n"))
+            .collect();
+        format!("HTTP/1.1 {status} {reason}\r\n{headers}\r\n{body}")
     }
 
     /// Waits for the process to exit by itself.
