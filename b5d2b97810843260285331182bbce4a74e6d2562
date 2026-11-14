@@ -1,0 +1,1 @@
+Phase 3 tasks: scripts/verify-skeleton.sh deleted (every section covered: plan.md map). README points at ci.sh and tests/capture.rs; capture.rs docstring no longer names the script. conductor/workflow.md Phase Completion step 4: retirement rule (2026-11-14, gluon TD-46), as in user-service-rs and tests/contract; scripts/lib/verify.sh kept as a shared tool.
