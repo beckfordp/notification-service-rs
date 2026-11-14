@@ -6,7 +6,7 @@ This file tracks all major tracks for the project.
 
 ## Tracks
 
-- [ ] **Track: TD-46: verify-skeleton.sh into CI**
+- [~] **Track: TD-46: verify-skeleton.sh into CI**
   *Link: [./tracks/retire-scripts_20261114/](./tracks/retire-scripts_20261114/)*
 ---
 
