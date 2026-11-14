@@ -1,0 +1,1 @@
+Fix to f321916/5b29fc9: core.autocrlf=input had stored the http fixtures with LF, so a fresh checkout's fixtures differ from the capture. .gitattributes marks them -text (as tests/contract's contracts/**/http/*.txt) and they are re-added byte for byte. Service::exchange builds the text with write! (clippy format_collect). fmt, clippy -D warnings clean; capture tests 2 passed.
