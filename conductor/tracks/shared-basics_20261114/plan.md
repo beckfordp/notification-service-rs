@@ -7,7 +7,7 @@ A refactor: the existing tests are the guard, run before and after each task.
 - [x] Task: `db` and `server` onto `postgres`, `health` and `text_error` c334373
       (guard: `tests/health.rs`, `tests/readiness.rs`)
 - [x] Task: `tests/support` onto service-testing 8b73b64
-- [ ] Task: TD-47: the pool size cites the Scala source
+- [x] Task: TD-47: the pool size cites the Scala source b104cb6
 - [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
     - [ ] `scripts/ci.sh` green
     - [ ] `git grep 'as user-service-rs'` empty
