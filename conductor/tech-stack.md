@@ -9,7 +9,7 @@ them.
 ## Environment
 Developed and tested in the sandbox: Rust via rustup, PostgreSQL 16 binaries,
 Kafka (sandbox broker, RPN-9 fixtures), crates.io reachable; no Docker, no
-GitHub, no Scala. gluon `docs/sandbox.md` records the sandbox; a tool added
+GitHub, no Scala. gluon `plans/private/sandbox.md` (laptop only) records the sandbox; a tool added
 here is added to gluon `bin/sandbox-setup` in the same change.
 
 ## Language / runtime
