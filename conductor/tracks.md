@@ -16,3 +16,5 @@ scope: gluon `PLAN.md` "Rust Port — notification-service" (ADR 0029). One trac
 session, outside-in (each harness group in `tests/contract` first), each ending with a
 review. When ready, run `/conductor:newTrack <title>`.
 
+
+- CI checks out gluon-rs: crates depend on ../../lib/gluon-rs by path (gluon TD-43.1); .github/workflows/ci.yml must check out gluon-rs alongside (the repo itself at services/notification-service-rs in the workspace). Needs gluon-rs's GitHub remote first
