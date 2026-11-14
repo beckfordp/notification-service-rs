@@ -136,6 +136,7 @@ Before marking any task complete, verify:
 - [ ] No linting or static analysis errors (scalafmt check)
 - [ ] Documentation updated if needed
 - [ ] No security vulnerabilities introduced
+- [ ] A changed shell script runs on macOS, on a stock-macOS PATH (no Homebrew coreutils), and on Linux through gluon-rs's `scripts/on-linux.sh` (the Docker test bed, gluon TD-43.2); shellcheck clean
 
 ## Development Commands
 
