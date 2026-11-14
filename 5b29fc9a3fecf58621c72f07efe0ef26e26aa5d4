@@ -1,0 +1,1 @@
+Task: fixtures (Phase 2). Capture 20261111's http/health.txt, health-ready.txt, health-head.txt and db/schema.sql copied unchanged into crates/notification-service/tests/fixtures (README cites the capture), so CI compares with the capture without the tests/contract checkout.
