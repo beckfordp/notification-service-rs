@@ -5,4 +5,4 @@
     - [x] Red: on a stock-macOS PATH, ci.sh says "SKIP cargo-audit: advisory
           database unreachable" with the database reachable
     - [x] Green: ci.sh on the library; audit runs on that PATH
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
