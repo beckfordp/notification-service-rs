@@ -26,7 +26,7 @@
 - [x] Task: `scripts/ci.sh` green, coverage ≥ 80% — 92.36% lines
 - [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
-## Phase 3: Retire and rule
+## Phase 3: Retire and rule [checkpoint: 94136ad]
 - [x] Task: delete `scripts/verify-skeleton.sh`; live references updated (README, conductor docs) `b5d2b97`
 - [x] Task: `conductor/workflow.md` Phase Completion step 4: retirement rule `b5d2b97`
 - [x] Task: `verify-retire-scripts.sh` PASS; failure path proven on a copy — PASS 9 checks (ci.sh 92.36%); copy citing a missing fixture: exit 1, file named
