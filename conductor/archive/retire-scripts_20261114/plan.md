@@ -38,3 +38,5 @@ Risks: pg_dump output can differ by Postgres version (capture taken on PG 16; th
 
 ## Phase: Review Fixes
 - [x] Task: Apply review suggestions b052004
+
+At archive: `verify-retire-scripts.sh` deleted (per the rule: every section one-off or covered by CI). gluon follow-up: TD-46.1 `[x]`; TD-39 note (canon_http gone here); tests/contract `docs/implicit-behaviours.md` N2 and health row; TD-42 text; the rust.md §8 exception in user-service-rs.
