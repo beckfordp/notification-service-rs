@@ -22,9 +22,10 @@ here is added to gluon `bin/sandbox-setup` in the same change.
 
 ## Workspace layout
 - `notification-service` — the service binary
-- Shared crates come from `lib/gluon-rs` by path once extracted: `telemetry`
-  (RPN-7), `gluon-kafka` (RPN-8). Until then, none (RPN-2 has no shared
-  crates).
+- Shared crates come from `lib/gluon-rs` by path: `service-basics`
+  (environment, shutdown, config, Postgres pool and ping, plain-text errors,
+  health) and, for tests, `service-testing` *(2026-11-14, gluon TD-43.1)*;
+  later `telemetry` (RPN-7) and `gluon-kafka` (RPN-8).
 
 ## HTTP
 - axum + tower / tower-http (CORS with the Scala service's exact policy)
