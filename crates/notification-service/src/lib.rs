@@ -4,8 +4,12 @@
 //! notification-service (gluon ADR 0029).
 
 pub mod config;
+pub mod cors;
 pub mod db;
+pub mod domain;
+pub mod emails;
 pub mod server;
+pub mod store;
 
 /// The package version, as built.
 #[must_use]

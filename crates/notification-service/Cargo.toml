@@ -15,8 +15,16 @@ workspace = true
 [dependencies]
 service-basics = { path = "../../../../lib/gluon-rs/crates/service-basics" }
 axum = "0.8"
-sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "migrate", "macros"] }
+serde = { version = "1", features = ["derive"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "migrate", "macros", "time", "uuid"] }
+thiserror = "2"
+time = "0.3"
 tokio = { version = "1", features = ["net"] }
+uuid = "1"
 
 [dev-dependencies]
 service-testing = { path = "../../../../lib/gluon-rs/crates/service-testing" }
+serde_json = "1"
+time = { version = "0.3", features = ["macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }

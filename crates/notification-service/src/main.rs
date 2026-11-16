@@ -6,6 +6,7 @@
 use std::process::ExitCode;
 
 use notification_service::config::{self, Config};
+use notification_service::store::PgSentEmails;
 use notification_service::{db, server};
 use service_basics::{environment, runtime, shutdown};
 
@@ -43,7 +44,13 @@ async fn serve(config: &Config) -> ExitCode {
         return ExitCode::FAILURE;
     }
     println!("notification-service starting on port {}", config.port);
-    match server::run(config.port, pool, shutdown::signal("notification-service")).await {
+    match server::run(
+        config.port,
+        PgSentEmails::new(pool),
+        shutdown::signal("notification-service"),
+    )
+    .await
+    {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             eprintln!("notification-service: {error}");

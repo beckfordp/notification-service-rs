@@ -29,7 +29,13 @@ here is added to gluon `bin/sandbox-setup` in the same change.
 
 ## HTTP
 - axum + tower / tower-http (CORS with the Scala service's exact policy)
+  *(2026-11-15, RPN-5: CORS is the crate's own `cors` middleware, not
+  tower-http's: http4s's `CORSPolicy` answers a refused preflight 200 with only
+  `Vary` and leaves the no-route 404 alone, which tower-http's `CorsLayer`
+  doesn't do; tower only in tests.)*
 - serde / serde_json
+- time and uuid for `sent_email`'s columns (sqlx `time`, `uuid`); instants
+  printed by gluon-rs `service-basics::jvm::java_instant` *(2026-11-15, RPN-5)*
 - Outbound: reqwest for user-service and order-service, with the Scala
   service's retry and circuit-breaker settings (`user-client`,
   `order-client`). **Open:** where the resilience wrapper lives (probably
