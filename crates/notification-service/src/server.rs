@@ -1,24 +1,22 @@
 // SPDX-License-Identifier: MIT
 
-//! The HTTP server: routes, binding and graceful shutdown. The health routes
-//! and tapir's plain-text errors are gluon-rs `service-basics`.
+//! The HTTP server: routes, binding and graceful shutdown. The health routes,
+//! tapir's plain-text errors and the HTTP edge (CORS, the Allow-less 405) are
+//! gluon-rs `service-basics`.
 
 use std::future::Future;
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 
-use axum::extract::Request;
-use axum::http::header::ALLOW;
-use axum::middleware::{self, Next};
-use axum::response::Response;
+use axum::Router;
 use axum::routing::any;
-use axum::{Extension, Router};
+use service_basics::cors::{CorsPolicy, Unrouted};
+use service_basics::edge::edge;
 use service_basics::health::{self, Readiness};
 use service_basics::text_error::{self, TextError, method_not_allowed};
 use tokio::net::TcpListener;
 
-use crate::cors::{self, Unrouted};
 use crate::emails::list_emails;
 use crate::store::SentEmails;
 
@@ -40,14 +38,10 @@ impl<S: SentEmails> Readiness for AppState<S> {
     }
 }
 
-/// The service: its routes ([`routes`]) as the Scala service's middleware
-/// sees them, CORS outermost (`AppRoutes`). Both layers wrap the whole
-/// router, so they see its final answer: axum's 405s and the 404 fallback.
+/// The service: its routes ([`routes`]) behind the Scala services' edge, CORS
+/// outermost (`AppRoutes`; `Cors.scala` exposes nothing).
 pub fn app<S: SentEmails>(store: S) -> Router {
-    Router::new()
-        .fallback_service(routes(store))
-        .layer(middleware::from_fn(without_allow))
-        .layer(middleware::from_fn(cors::cors))
+    edge(routes(store), CorsPolicy::default())
 }
 
 /// The routes: health, `/emails` (GET only, `/emails/` too), tapir's 405 for
@@ -66,16 +60,8 @@ pub fn routes<S: SentEmails>(store: S) -> Router {
 }
 
 /// 404 for any unknown path, marked [`Unrouted`] for CORS.
-async fn not_found() -> (Extension<Unrouted>, TextError) {
-    (Extension(Unrouted), text_error::not_found().await)
-}
-
-/// tapir's 405 has no `Allow` header (capture `http/emails-post.txt`,
-/// `health-head.txt`); axum's method router adds one.
-async fn without_allow(request: Request, next: Next) -> Response {
-    let mut response = next.run(request).await;
-    response.headers_mut().remove(ALLOW);
-    response
+async fn not_found() -> (Unrouted, TextError) {
+    (Unrouted, text_error::not_found().await)
 }
 
 /// Serves the API on `0.0.0.0:<port>` until `shutdown` completes.

@@ -5,7 +5,6 @@
 
 pub mod config;
 pub mod consumers;
-pub mod cors;
 pub mod db;
 pub mod domain;
 pub mod email;
