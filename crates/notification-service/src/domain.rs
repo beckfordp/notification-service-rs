@@ -5,6 +5,9 @@
 //! (`conductor/code_styleguides/rust.md` rule 1).
 
 use std::fmt;
+use std::str::FromStr;
+
+use serde::Deserialize;
 
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -31,16 +34,26 @@ impl RecipientType {
             Self::Order => "order",
         }
     }
+}
 
-    /// The stored form parsed; `None` for any other text.
-    #[must_use]
-    pub fn parse(text: &str) -> Option<Self> {
+impl FromStr for RecipientType {
+    type Err = UnknownValue;
+
+    /// The stored form (Scala `RecipientType.fromString`); any other text is
+    /// an [`UnknownValue`].
+    fn from_str(text: &str) -> Result<Self, UnknownValue> {
         match text {
-            "customer" => Some(Self::Customer),
-            "email" => Some(Self::Email),
-            "order" => Some(Self::Order),
-            _ => None,
+            "customer" => Ok(Self::Customer),
+            "email" => Ok(Self::Email),
+            "order" => Ok(Self::Order),
+            other => Err(UnknownValue(other.to_owned())),
         }
+    }
+}
+
+impl fmt::Display for RecipientType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -68,19 +81,34 @@ impl EmailStatus {
             Self::Unresolved => "unresolved",
         }
     }
+}
 
-    /// The stored form parsed; `None` for any other text.
-    #[must_use]
-    pub fn parse(text: &str) -> Option<Self> {
+impl FromStr for EmailStatus {
+    type Err = UnknownValue;
+
+    /// The stored form (Scala `EmailStatus.fromString`); any other text is an
+    /// [`UnknownValue`].
+    fn from_str(text: &str) -> Result<Self, UnknownValue> {
         match text {
-            "pending" => Some(Self::Pending),
-            "sent" => Some(Self::Sent),
-            "failed" => Some(Self::Failed),
-            "unresolved" => Some(Self::Unresolved),
-            _ => None,
+            "pending" => Ok(Self::Pending),
+            "sent" => Ok(Self::Sent),
+            "failed" => Ok(Self::Failed),
+            "unresolved" => Ok(Self::Unresolved),
+            other => Err(UnknownValue(other.to_owned())),
         }
     }
 }
+
+impl fmt::Display for EmailStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Text that names no variant of a stored enum.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("unknown value {0:?}")]
+pub struct UnknownValue(pub String);
 
 /// One `sent_email` row (Scala `SentEmailRow`): one handled event.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -117,6 +145,222 @@ pub struct SentEmail {
     pub failed_at: Option<OffsetDateTime>,
     /// Why it failed or is unresolved.
     pub error: Option<String>,
+}
+
+// Ids and addresses as the events carry them: newtypes so one can't stand for
+// another, any text (the Scala service takes them as `String`s and validates
+// none, so neither does the port). The read model (`SentEmail`, `/emails`)
+// keeps the columns as text: it echoes them.
+
+/// An envelope's `eventId`: the idempotency key.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct EventId(String);
+
+impl EventId {
+    /// `text` as the event carried it.
+    #[must_use]
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    /// The text, as stored.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for EventId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+/// A customer (user) id.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[serde(transparent)]
+pub struct CustomerId(String);
+
+impl CustomerId {
+    /// `text` as the event carried it.
+    #[must_use]
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    /// The text, as stored.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for CustomerId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+/// An order id.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct OrderId(String);
+
+impl OrderId {
+    /// `text` as the event carried it.
+    #[must_use]
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    /// The text, as stored.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for OrderId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+/// An email address.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[serde(transparent)]
+pub struct EmailAddress(String);
+
+impl EmailAddress {
+    /// `text` as the event carried it.
+    #[must_use]
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    /// The text, as stored.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for EmailAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+/// Who an email is for, as the event names them: one value for the stored
+/// pair (`recipient_type`, `recipient_key`), so a customer can't be named by
+/// an address.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RecipientKey {
+    /// A customer, resolved through user-service.
+    Customer(CustomerId),
+    /// An address the event carries (`UserRegistered`).
+    Email(EmailAddress),
+    /// An order, resolved through order-service then user-service.
+    Order(OrderId),
+}
+
+impl RecipientKey {
+    /// The stored `recipient_type`.
+    #[must_use]
+    pub fn recipient_type(&self) -> RecipientType {
+        match self {
+            Self::Customer(_) => RecipientType::Customer,
+            Self::Email(_) => RecipientType::Email,
+            Self::Order(_) => RecipientType::Order,
+        }
+    }
+
+    /// The stored `recipient_key`.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Customer(id) => id.as_str(),
+            Self::Email(address) => address.as_str(),
+            Self::Order(id) => id.as_str(),
+        }
+    }
+}
+
+/// One email as a consumer asks for it, before it is claimed (Scala
+/// `EmailMessage`): who the event names (`recipient`) and, once known, the
+/// address it goes to (ADM-3).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EmailMessage {
+    /// The envelope `eventId`: the idempotency key.
+    pub source_event_id: EventId,
+    /// The event type, e.g. `UserRegistered`.
+    pub event_type: String,
+    /// The event's cancellation or failure reason, if any.
+    pub reason: Option<String>,
+    /// Who the event names: a customer, an address or an order.
+    pub recipient: RecipientKey,
+    /// The customer the email is attributed to, when known.
+    pub customer_id: Option<CustomerId>,
+    /// The order the email concerns, when the event carries one.
+    pub order_id: Option<OrderId>,
+    /// The subject.
+    pub subject: String,
+    /// The body.
+    pub body: String,
+    /// The address it goes to, once known.
+    pub recipient_email: Option<EmailAddress>,
+}
+
+impl EmailMessage {
+    /// This message to `address`, found for it (ADM-3): attributed to
+    /// `customer_id` when a lookup found one, else as claimed.
+    #[must_use]
+    pub fn addressed_to(self, address: EmailAddress, customer_id: Option<CustomerId>) -> Self {
+        Self {
+            recipient_email: Some(address),
+            customer_id: customer_id.or(self.customer_id),
+            ..self
+        }
+    }
+}
+
+/// The event type of a new user's signup (gluon registry
+/// `user-events-UserRegistered`).
+pub const USER_REGISTERED: &str = "UserRegistered";
+
+/// The welcome email for a new user (Scala `UserRegisteredConsumer.emailFor`
+/// and `sendWelcome`): to the address in the event, attributed to the user,
+/// the address already known (no lookup).
+#[must_use]
+pub fn welcome_message(
+    event_id: EventId,
+    user_id: CustomerId,
+    email: EmailAddress,
+) -> EmailMessage {
+    EmailMessage {
+        source_event_id: event_id,
+        event_type: USER_REGISTERED.to_owned(),
+        reason: None,
+        recipient: RecipientKey::Email(email.clone()),
+        customer_id: Some(user_id),
+        order_id: None,
+        subject: "Welcome to gshop".to_owned(),
+        body: format!("Welcome, {email}. Your gshop account is ready."),
+        recipient_email: Some(email),
+    }
+}
+
+/// The address a message already carries, so no lookup is needed (Scala
+/// `RecipientResolver.resolvedAddress`): its resolved `recipient_email`, else
+/// the address the event names.
+#[must_use]
+pub fn carried_address(message: &EmailMessage) -> Option<&EmailAddress> {
+    message
+        .recipient_email
+        .as_ref()
+        .or(match &message.recipient {
+            RecipientKey::Email(address) => Some(address),
+            RecipientKey::Customer(_) | RecipientKey::Order(_) => None,
+        })
 }
 
 /// `GET /emails`'s filters: each optional, matched as exact text, combined

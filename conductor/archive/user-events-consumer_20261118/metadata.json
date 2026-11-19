@@ -1,0 +1,8 @@
+{
+  "track_id": "user-events-consumer_20261118",
+  "type": "feature",
+  "status": "archived",
+  "created_at": "2026-11-18T14:40:00Z",
+  "updated_at": "2026-11-18T15:45:00Z",
+  "description": "The user-events consumer: UserRegistered sends the welcome email, audited in sent_email; the rest dead-lettered or skipped as the Scala service does. Turns tests/contract checks/test_notification_user_events.py (RPN-10, 6 PENDING) green."
+}

@@ -7,11 +7,16 @@ inward). It is a drop-in replacement: same REST, docs, Kafka consumers, DLQs,
 schema, config and observability contracts. The Scala service stays the
 default.
 
-**Status (2026-11-15):** the walking skeleton (RPN-2) migrates `sent_email`
+**Status (2026-11-18):** the walking skeleton (RPN-2) migrates `sent_email`
 and answers `/health` and `/health/ready`; RPN-5 adds ADM-2's read-only
 `GET /emails?customerId=&orderId=` and the Scala service's CORS policy, so the
 harness's REST group (tests/contract `checks/test_notification_rest.py`) is
-green, 24/24. `scripts/ci.sh` is CI (`tests/capture.rs` compares the
+green, 24/24. RPN-11 adds the user-events consumer: `UserRegistered` sends
+the welcome email through the audited send every consumer will share
+(`sent_email` claimed, resolved, sent through the logging stub, marked), the
+rest skipped or dead-lettered to `user-events-dlq` as the Scala service does,
+so the harness's user-events group is green too, 6/6 (30/30 with REST).
+`scripts/ci.sh` is CI (`tests/capture.rs` compares the
 `sent_email` DDL with the capture, vendored in
 `crates/notification-service/tests/fixtures`).
 Work is planned in [`conductor/tracks.md`](./conductor/tracks.md) and

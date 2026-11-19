@@ -1,11 +1,21 @@
 // SPDX-License-Identifier: MIT
 
 //! Shared by the integration tests: gluon-rs `service-testing`'s throwaway
-//! PostgreSQL cluster, and this service's binary under test.
+//! PostgreSQL cluster, this service's store over it and its binary under
+//! test, and a logger whose lines the test can read back.
 
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
+
+use notification_service::config::PostgresConfig;
+use notification_service::db;
+use notification_service::domain::{EmailFilter, SentEmail};
+use notification_service::store::{PgSentEmails, SentEmails};
+use serde_json::Value;
+use telemetry::logging::Logger;
 
 // Not every test file uses both.
 #[allow(unused_imports)]
@@ -67,4 +77,44 @@ pub fn canon_ddl(dump: &str) -> Vec<String> {
         .collect();
     statements.sort();
     statements
+}
+
+/// The service's store over `postgres`, migrated as the service migrates it.
+pub async fn store(postgres: &Postgres) -> PgSentEmails {
+    let env: HashMap<_, _> = postgres.env().into_iter().collect();
+    let config = PostgresConfig {
+        host: env["POSTGRES_HOST"].clone(),
+        port: env["POSTGRES_PORT"].parse().unwrap(),
+        database: env["POSTGRES_DB"].clone(),
+        user: env["POSTGRES_USER"].clone(),
+        password: env["POSTGRES_PASSWORD"].clone(),
+    };
+    let pool = db::connect(&config).await.unwrap();
+    db::migrate(&pool).await.unwrap();
+    PgSentEmails::new(pool)
+}
+
+/// Every `sent_email` row, newest first.
+pub async fn rows(store: &PgSentEmails) -> Vec<SentEmail> {
+    store.list(&EmailFilter::default()).await.unwrap()
+}
+
+/// Where a [`captured_logger`] writes.
+pub type LogBuffer = Arc<Mutex<Vec<u8>>>;
+
+/// A logger named as the service's, writing to a buffer the test reads back.
+pub fn captured_logger() -> (Logger, LogBuffer) {
+    let buffer = LogBuffer::default();
+    (
+        Logger::to_writer("notification-service", buffer.clone()),
+        buffer,
+    )
+}
+
+/// The lines logged to `buffer` so far, each as JSON.
+pub fn log_lines(buffer: &LogBuffer) -> Vec<Value> {
+    let text = String::from_utf8(buffer.lock().unwrap().clone()).unwrap();
+    text.lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
 }

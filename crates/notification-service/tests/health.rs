@@ -67,6 +67,30 @@ fn sigterm_exits_0() {
 }
 
 #[test]
+fn the_start_is_a_json_log_line_and_stdout_is_only_json() {
+    // capture stdout.log: {"message":"notification-service starting",
+    // "logger_name":"notification-service","level":"INFO","port":"18080",...}
+    // (its metrics_port arrives with the /metrics endpoint)
+    let postgres = Postgres::start();
+    let mut service = Service::start(&postgres.env());
+    service.terminate();
+    assert_eq!(service.wait_exit().code(), Some(0));
+
+    let stdout = service.stdout();
+    let lines: Vec<serde_json::Value> = stdout
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap_or_else(|_| panic!("not JSON: {line}")))
+        .collect();
+    let start = lines
+        .iter()
+        .find(|line| line["message"] == "notification-service starting")
+        .unwrap_or_else(|| panic!("no start line in {stdout}"));
+    assert_eq!(start["logger_name"], "notification-service");
+    assert_eq!(start["level"], "INFO");
+    assert_eq!(start["port"], service.port.to_string());
+}
+
+#[test]
 fn bad_config_exits_1_listing_every_problem() {
     let mut service = Service::spawn(&[
         ("NOTIFICATION_SERVICE_PORT", "http".to_owned()),

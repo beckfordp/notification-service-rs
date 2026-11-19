@@ -10,28 +10,11 @@ mod support;
 
 use std::time::Duration;
 
-use notification_service::config::PostgresConfig;
-use notification_service::db;
 use notification_service::domain::{EmailFilter, EmailStatus, RecipientType, SentEmail};
 use notification_service::store::{PgSentEmails, SentEmails, StoreError};
-use support::Postgres;
+use support::{Postgres, store};
 use time::macros::datetime;
 use uuid::Uuid;
-
-/// The store over `postgres`, migrated.
-async fn store(postgres: &Postgres) -> PgSentEmails {
-    let env: std::collections::HashMap<_, _> = postgres.env().into_iter().collect();
-    let config = PostgresConfig {
-        host: env["POSTGRES_HOST"].clone(),
-        port: env["POSTGRES_PORT"].parse().unwrap(),
-        database: env["POSTGRES_DB"].clone(),
-        user: env["POSTGRES_USER"].clone(),
-        password: env["POSTGRES_PASSWORD"].clone(),
-    };
-    let pool = db::connect(&config).await.unwrap();
-    db::migrate(&pool).await.unwrap();
-    PgSentEmails::new(pool)
-}
 
 /// Inserts a sent row; `None` columns stay null.
 fn insert(
