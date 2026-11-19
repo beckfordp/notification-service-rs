@@ -11,7 +11,7 @@
 use std::time::Duration;
 
 use kafka_client::KafkaError;
-use kafka_client::settings::ConsumerSettings;
+use kafka_client::settings::{ConsumerSettings, SettingsError};
 use kafka_client::supervised::{ConsumerTelemetry, Resilience, run_supervised};
 use tokio::sync::watch;
 
@@ -22,24 +22,33 @@ use crate::user_events::{GROUP, TOPIC, UserEvents};
 /// events-probe's default; the Scala client's metrics have no setting).
 pub const LAG_INTERVAL: Duration = Duration::from_secs(5);
 
+/// The user-events consumer's settings on `bootstrap`.
+///
+/// # Errors
+/// When its group or topic isn't a name Kafka allows.
+pub fn settings(bootstrap: &str) -> Result<ConsumerSettings, SettingsError> {
+    Ok(ConsumerSettings {
+        bootstrap: bootstrap.to_owned(),
+        group_id: GROUP.parse()?,
+        topic: TOPIC.parse()?,
+        lag_interval: LAG_INTERVAL,
+    })
+}
+
 /// Runs the consumers on `bootstrap` until `stop` is set, sending through
 /// `client`.
 ///
 /// # Errors
-/// When a consumer can't be built (the DLQ producer's configuration); a
-/// failed stream is restarted, not returned.
+/// When a consumer can't be built (its settings, the DLQ producer's
+/// configuration); a failed stream is restarted, not returned.
 pub async fn run<C: EmailClient>(
     bootstrap: &str,
     client: C,
     telemetry: ConsumerTelemetry,
     stop: watch::Receiver<bool>,
 ) -> Result<(), KafkaError> {
-    let settings = ConsumerSettings {
-        bootstrap: bootstrap.to_owned(),
-        group_id: GROUP.to_owned(),
-        topic: TOPIC.to_owned(),
-        lag_interval: LAG_INTERVAL,
-    };
+    let settings =
+        settings(bootstrap).map_err(|error| KafkaError::ClientCreation(error.to_string()))?;
     let routes = UserEvents::new(client, telemetry.logger.clone());
     run_supervised(settings, &Resilience::default(), routes, telemetry, stop).await
 }

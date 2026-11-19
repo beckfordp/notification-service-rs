@@ -14,9 +14,12 @@ use std::future::Future;
 use std::sync::{Arc, Mutex};
 
 use kafka_event_consumer::envelope::{Envelope, Routes};
+use notification_service::consumers;
 use notification_service::domain::{CustomerId, EmailAddress, EmailMessage, EventId, RecipientKey};
 use notification_service::email::{EmailClient, SendError, SendOutcome, TransportError};
-use notification_service::user_events::{UserEvents, UserRegistered};
+use notification_service::user_events::{
+    GROUP, TOPIC, UserEvents, UserEventsError, UserRegistered,
+};
 use serde_json::Value;
 use support::{LogBuffer, captured_logger, log_lines};
 
@@ -76,7 +79,7 @@ fn route(client: &Fake) -> (UserEvents<Fake>, LogBuffer) {
 }
 
 /// Handles the capture's welcome event through `client`; its log lines.
-async fn handle_welcome(client: &Fake) -> (Result<(), String>, Vec<Value>) {
+async fn handle_welcome(client: &Fake) -> (Result<(), UserEventsError>, Vec<Value>) {
     let (route, buffer) = route(client);
     let event = route.decode(&registered()).unwrap().unwrap();
     let result = route.handle(EVENT, &event).await;
@@ -107,7 +110,10 @@ fn a_user_registered_payload_without_an_email_is_poison() {
     let without_email = envelope("UserRegistered", &format!(r#"{{"userId":"{USER}"}}"#));
 
     let decoded = route.decode(&without_email).unwrap();
-    assert!(decoded.is_err(), "{decoded:?}");
+    assert!(
+        matches!(decoded, Err(UserEventsError::Payload(_))),
+        "{decoded:?}"
+    );
 }
 
 #[tokio::test]
@@ -116,7 +122,7 @@ async fn a_user_registered_event_sends_the_welcome_email_to_its_address() {
 
     let (result, _) = handle_welcome(&client).await;
 
-    assert_eq!(result, Ok(()));
+    assert!(result.is_ok(), "{result:?}");
     let sent = client.sent.lock().unwrap().clone();
     assert_eq!(
         sent,
@@ -152,7 +158,7 @@ async fn a_sent_welcome_is_logged_as_sent() {
 async fn a_duplicate_welcome_is_logged_as_a_duplicate() {
     let (result, lines) = handle_welcome(&Fake::answering(Ok(SendOutcome::AlreadySent))).await;
 
-    assert_eq!(result, Ok(()));
+    assert!(result.is_ok(), "{result:?}");
     let [line] = lines.as_slice() else {
         panic!("one line, got {lines:?}")
     };
@@ -170,7 +176,7 @@ async fn an_unresolved_welcome_is_logged_as_a_warning_with_its_reason() {
 
     let (result, lines) = handle_welcome(&Fake::answering(Ok(outcome))).await;
 
-    assert_eq!(result, Ok(()));
+    assert!(result.is_ok(), "{result:?}");
     let [line] = lines.as_slice() else {
         panic!("one line, got {lines:?}")
     };
@@ -187,6 +193,18 @@ async fn an_unresolved_welcome_is_logged_as_a_warning_with_its_reason() {
 async fn a_failed_send_is_raised_for_the_dlq_guard() {
     let (result, lines) = handle_welcome(&Fake::answering(Err("db down".to_owned()))).await;
 
-    assert_eq!(result, Err("db down".to_owned()));
+    let Err(UserEventsError::Send(error)) = result else {
+        panic!("want the send failure, got {result:?}");
+    };
+    assert_eq!(error.to_string(), "db down");
     assert!(lines.is_empty(), "no outcome logged: {lines:?}");
+}
+
+#[test]
+fn the_consumer_reads_its_topic_as_its_group() {
+    let settings = consumers::settings("kafka:9092").unwrap();
+    assert_eq!(settings.bootstrap, "kafka:9092");
+    assert_eq!(settings.group_id.as_str(), GROUP);
+    assert_eq!(settings.topic.as_str(), TOPIC);
+    assert_eq!(settings.lag_interval, consumers::LAG_INTERVAL);
 }
