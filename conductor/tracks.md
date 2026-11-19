@@ -6,6 +6,9 @@ This file tracks all major tracks for the project.
 
 ## Tracks
 
+- [~] **Track: Adopt kafka-client's TD-64 changes (gluon TD-64)**
+  *Link: [./tracks/kafka-client-td64_20261119/](./tracks/kafka-client-td64_20261119/)*
+
 ---
 
 ## Backlog
