@@ -3,7 +3,7 @@
 //! The HTTP surface against an in-memory store: `/emails`, its errors, the
 //! other methods, and CORS (captures `http/emails-*.txt`, `cors-*.txt`;
 //! http4s `CORSPolicy` for what they don't show). Postgres-backed behaviour is
-//! `tests/store.rs` and `tests/emails.rs`; wire parity is the harness's (`test_notification_rest.py`).
+//! `tests/store.rs` and `tests/emails.rs`; wire parity is the harness's (`test_notification_rest_wire.py`).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 

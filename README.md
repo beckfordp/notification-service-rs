@@ -10,7 +10,7 @@ default.
 **Status (2026-11-18):** the walking skeleton (RPN-2) migrates `sent_email`
 and answers `/health` and `/health/ready`; RPN-5 adds ADM-2's read-only
 `GET /emails?customerId=&orderId=` and the Scala service's CORS policy, so the
-harness's REST group (tests/contract `checks/test_notification_rest.py`) is
+harness's REST group (tests/contract `checks/test_notification_rest_wire.py`) is
 green, 24/24. RPN-11 adds the user-events consumer: `UserRegistered` sends
 the welcome email through the audited send every consumer will share
 (`sent_email` claimed, resolved, sent through the logging stub, marked), the
