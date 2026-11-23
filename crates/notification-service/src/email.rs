@@ -46,15 +46,6 @@ pub enum Recipient {
 /// A lookup that failed for now: retried by the DLQ guard, then dead-lettered.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum LookupError {
-    /// No lookup for this kind of recipient yet (user-service and
-    /// order-service lookups arrive with the consumers that need them).
-    #[error("no recipient lookup for a {recipient_type} recipient ({key}): not ported yet")]
-    NotPorted {
-        /// `customer` or `order`.
-        recipient_type: &'static str,
-        /// The id it would have looked up.
-        key: String,
-    },
     /// The lookup failed, e.g. `Circuit breaker is open`: its text is the
     /// row's `error`, as the Scala exception's message is.
     #[error("{0}")]
@@ -117,23 +108,6 @@ impl<F: Resolver> Resolver for CarriedAddress<F> {
             }),
             None => self.fallback.resolve(message).await,
         }
-    }
-}
-
-/// No lookups yet: a message needing one fails as a transient error would,
-/// so it is retried and dead-lettered, not lost.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct NoLookup;
-
-impl Resolver for NoLookup {
-    fn resolve(
-        &self,
-        message: &EmailMessage,
-    ) -> impl Future<Output = Result<Recipient, LookupError>> + Send {
-        std::future::ready(Err(LookupError::NotPorted {
-            recipient_type: message.recipient.recipient_type().as_str(),
-            key: message.recipient.as_str().to_owned(),
-        }))
     }
 }
 

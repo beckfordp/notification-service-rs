@@ -18,8 +18,8 @@ use notification_service::domain::{
     CustomerId, EmailAddress, EmailMessage, EventId, RecipientKey, welcome_message,
 };
 use notification_service::email::{
-    Audited, CarriedAddress, EmailClient, LookupError, NoLookup, Recipient, Resolver, SendError,
-    SendOutcome, Transport, TransportError,
+    Audited, CarriedAddress, EmailClient, LookupError, Recipient, Resolver, SendError, SendOutcome,
+    Transport, TransportError,
 };
 use notification_service::ids::RandomIds;
 use notification_service::store::{Claim, EmailAudit, StoreError};
@@ -114,6 +114,21 @@ impl Transport for Sends {
     }
 }
 
+/// Every lookup fails, as user-service down would.
+#[derive(Clone)]
+struct LookupDown;
+
+impl Resolver for LookupDown {
+    fn resolve(
+        &self,
+        _message: &EmailMessage,
+    ) -> impl Future<Output = Result<Recipient, LookupError>> + Send {
+        std::future::ready(Err(LookupError::Failed(
+            "Circuit breaker is open".to_owned(),
+        )))
+    }
+}
+
 /// Finds no address for anyone.
 #[derive(Clone)]
 struct NoOne;
@@ -176,7 +191,7 @@ fn assert_store_error(outcome: &Result<SendOutcome, SendError>) {
 
 #[tokio::test]
 async fn a_send_claims_records_sends_and_marks_in_that_order() {
-    let (outcome, calls) = send_with(None, CarriedAddress::new(NoLookup), welcome()).await;
+    let (outcome, calls) = send_with(None, CarriedAddress::new(LookupDown), welcome()).await;
 
     assert_eq!(outcome.unwrap(), SendOutcome::Sent);
     assert_eq!(calls, ["claim", "mark_resolved", "send", "mark_sent"]);
@@ -184,7 +199,8 @@ async fn a_send_claims_records_sends_and_marks_in_that_order() {
 
 #[tokio::test]
 async fn a_failed_claim_is_raised_and_nothing_else_happens() {
-    let (outcome, calls) = send_with(Some("claim"), CarriedAddress::new(NoLookup), welcome()).await;
+    let (outcome, calls) =
+        send_with(Some("claim"), CarriedAddress::new(LookupDown), welcome()).await;
 
     assert_store_error(&outcome);
     assert_eq!(calls, ["claim"]);
@@ -194,7 +210,7 @@ async fn a_failed_claim_is_raised_and_nothing_else_happens() {
 async fn a_recipient_that_cant_be_recorded_is_not_sent_to() {
     let (outcome, calls) = send_with(
         Some("mark_resolved"),
-        CarriedAddress::new(NoLookup),
+        CarriedAddress::new(LookupDown),
         welcome(),
     )
     .await;
@@ -207,8 +223,12 @@ async fn a_recipient_that_cant_be_recorded_is_not_sent_to() {
 async fn a_send_that_cant_be_marked_sent_is_raised() {
     // At least once: the redelivery finds the row pending and sends again, as
     // the Scala service does.
-    let (outcome, calls) =
-        send_with(Some("mark_sent"), CarriedAddress::new(NoLookup), welcome()).await;
+    let (outcome, calls) = send_with(
+        Some("mark_sent"),
+        CarriedAddress::new(LookupDown),
+        welcome(),
+    )
+    .await;
 
     assert_store_error(&outcome);
     assert_eq!(calls, ["claim", "mark_resolved", "send", "mark_sent"]);
@@ -233,7 +253,7 @@ async fn a_failed_mark_after_a_failed_send_raises_the_store_failure() {
             calls: calls.clone(),
             fail: true,
         },
-        CarriedAddress::new(NoLookup),
+        CarriedAddress::new(LookupDown),
         RandomIds,
         captured_logger().0,
     );
@@ -248,14 +268,11 @@ async fn a_failed_mark_after_a_failed_send_raises_the_store_failure() {
 }
 
 #[tokio::test]
-async fn a_message_needing_a_lookup_fails_until_lookups_arrive() {
-    let (outcome, calls) = send_with(None, CarriedAddress::new(NoLookup), by_customer()).await;
+async fn a_failed_lookup_marks_the_row_failed_and_is_raised() {
+    let (outcome, calls) = send_with(None, CarriedAddress::new(LookupDown), by_customer()).await;
 
     assert!(
-        matches!(
-            outcome,
-            Err(SendError::Lookup(LookupError::NotPorted { .. }))
-        ),
+        matches!(&outcome, Err(SendError::Lookup(LookupError::Failed(text))) if text == "Circuit breaker is open"),
         "{outcome:?}"
     );
     assert_eq!(calls, ["claim", "mark_failed"], "marked failed, no send");

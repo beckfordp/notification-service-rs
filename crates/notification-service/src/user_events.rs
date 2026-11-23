@@ -9,6 +9,7 @@
 //! Scala.
 
 use kafka_event_consumer::envelope::{Envelope, Routes};
+use schemars::JsonSchema;
 use serde::Deserialize;
 use telemetry::logging::Logger;
 
@@ -24,8 +25,12 @@ pub const GROUP: &str = "notification-service-user-events";
 /// `UserRegistered`'s payload (Scala `UserRegisteredEvent`; gluon
 /// docs/system-design.md "Payload contracts"): both fields required, others
 /// ignored, as circe's derived decoder does.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
+#[schemars(
+    title = "UserRegisteredEvent",
+    description = "A user registered: user-service created the account."
+)]
 pub struct UserRegistered {
     /// The new user's id: the email's customer.
     pub user_id: CustomerId,

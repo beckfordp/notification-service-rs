@@ -27,6 +27,10 @@ pub struct Config {
     pub postgres: PostgresConfig,
     /// `KAFKA_BOOTSTRAP_SERVERS`: the consumers' and DLQ producer's brokers.
     pub kafka_bootstrap: String,
+    /// `USER_SERVICE_URL`: the recipient lookups' user-service.
+    pub user_url: String,
+    /// `ORDER_SERVICE_URL`: the recipient lookups' order-service.
+    pub order_url: String,
     /// `OTEL_*`.
     pub tracing: TracingConfig,
 }
@@ -49,6 +53,8 @@ pub fn from_env<S: BuildHasher>(env: &HashMap<String, String, S>) -> Result<Conf
         service_name: text("NOTIFICATION_SERVICE_NAME", "notification-service"),
         postgres,
         kafka_bootstrap: text("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
+        user_url: text("USER_SERVICE_URL", "http://localhost:8084"),
+        order_url: text("ORDER_SERVICE_URL", "http://localhost:8083"),
         tracing,
     })
 }

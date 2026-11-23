@@ -202,7 +202,7 @@ async fn a_failed_send_is_raised_for_the_dlq_guard() {
 
 #[test]
 fn the_consumer_reads_its_topic_as_its_group() {
-    let settings = consumers::settings("kafka:9092").unwrap();
+    let settings = consumers::settings("kafka:9092", TOPIC, GROUP).unwrap();
     assert_eq!(settings.bootstrap, "kafka:9092");
     assert_eq!(settings.group_id.as_str(), GROUP);
     assert_eq!(settings.topic.as_str(), TOPIC);

@@ -7,6 +7,7 @@
 use std::fmt;
 use std::str::FromStr;
 
+use schemars::JsonSchema;
 use serde::Deserialize;
 
 use time::OffsetDateTime;
@@ -177,7 +178,7 @@ impl fmt::Display for EventId {
 }
 
 /// A customer (user) id.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, JsonSchema)]
 #[serde(transparent)]
 pub struct CustomerId(String);
 
@@ -202,7 +203,8 @@ impl fmt::Display for CustomerId {
 }
 
 /// An order id.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, JsonSchema)]
+#[serde(transparent)]
 pub struct OrderId(String);
 
 impl OrderId {
@@ -226,7 +228,7 @@ impl fmt::Display for OrderId {
 }
 
 /// An email address.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, JsonSchema)]
 #[serde(transparent)]
 pub struct EmailAddress(String);
 
@@ -321,6 +323,16 @@ impl EmailMessage {
             ..self
         }
     }
+}
+
+/// Who an order belongs to, as order-service answers (Scala `OrderContact`):
+/// its customer, and the address a guest gave at checkout.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrderContact {
+    /// The order's customer.
+    pub customer_id: CustomerId,
+    /// The guest's address, when the order has one.
+    pub guest_email: Option<EmailAddress>,
 }
 
 /// The event type of a new user's signup (gluon registry

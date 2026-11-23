@@ -13,7 +13,7 @@ use std::future::Future;
 
 use notification_service::domain::{CustomerId, EmailAddress, EmailMessage, EventId, RecipientKey};
 use notification_service::email::{
-    CarriedAddress, LoggingTransport, LookupError, NoLookup, Recipient, Resolver, Transport,
+    CarriedAddress, LoggingTransport, LookupError, Recipient, Resolver, Transport,
 };
 use serde_json::Value;
 use support::{captured_logger, log_lines};
@@ -72,20 +72,6 @@ async fn the_logging_transport_falls_back_to_the_key_without_an_address() {
 }
 
 #[tokio::test]
-async fn no_lookup_fails_naming_the_recipient() {
-    let customer = message(RecipientKey::Customer(CustomerId::new(USER)), None);
-
-    let error = NoLookup.resolve(&customer).await.unwrap_err();
-
-    assert!(matches!(error, LookupError::NotPorted { .. }), "{error:?}");
-    assert_eq!(
-        error.to_string(),
-        "no recipient lookup for a customer recipient \
-         (11111111-1111-4111-8111-111111111111): not ported yet"
-    );
-}
-
-#[tokio::test]
 async fn a_message_without_an_address_goes_to_the_fallback() {
     #[derive(Clone)]
     struct Found;
@@ -116,13 +102,18 @@ async fn a_message_without_an_address_goes_to_the_fallback() {
             customer_id: None,
         }
     );
-    assert!(
-        CarriedAddress::new(NoLookup)
-            .resolve(&customer)
-            .await
-            .is_err(),
-        "no lookup yet"
-    );
+}
+
+/// A lookup that always fails: a carried address must not need it.
+struct Down;
+
+impl Resolver for Down {
+    fn resolve(
+        &self,
+        _message: &EmailMessage,
+    ) -> impl Future<Output = Result<Recipient, LookupError>> + Send {
+        std::future::ready(Err(LookupError::Failed("down".to_owned())))
+    }
 }
 
 #[tokio::test]
@@ -132,10 +123,7 @@ async fn a_carried_address_is_found_with_no_customer_of_its_own() {
         None,
     );
 
-    let recipient = CarriedAddress::new(NoLookup)
-        .resolve(&welcome)
-        .await
-        .unwrap();
+    let recipient = CarriedAddress::new(Down).resolve(&welcome).await.unwrap();
 
     // The claimed attribution stands (mark_resolved keeps a column given None).
     assert_eq!(

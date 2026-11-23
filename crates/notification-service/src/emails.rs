@@ -7,6 +7,7 @@ use axum::Json;
 use axum::extract::{RawQuery, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use schemars::JsonSchema;
 use serde::Serialize;
 use service_basics::jvm::java_instant;
 use service_basics::text_error::TextError;
@@ -17,7 +18,7 @@ use crate::store::{SentEmails, StoreError};
 
 /// One recorded email send attempt: Scala `SentEmailResponse`, its 16 fields
 /// in its order, absent values as `null` (circe's default).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SentEmailResponse {
     /// Audit row id (UUID).

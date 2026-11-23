@@ -17,6 +17,7 @@ use service_basics::health::{self, Readiness};
 use service_basics::text_error::{self, TextError, method_not_allowed};
 use tokio::net::TcpListener;
 
+use crate::docs;
 use crate::emails::list_emails;
 use crate::store::SentEmails;
 
@@ -44,7 +45,7 @@ pub fn app<S: SentEmails>(store: S) -> Router {
     edge(routes(store), CorsPolicy::default())
 }
 
-/// The routes: health, `/emails` (GET only, `/emails/` too), tapir's 405 for
+/// The routes: health, `/emails` (GET only, `/emails/` too), the docs, tapir's 405 for
 /// a known path with another method and 404 for any other (capture
 /// `http/unknown-path.txt`).
 pub fn routes<S: SentEmails>(store: S) -> Router {
@@ -57,6 +58,7 @@ pub fn routes<S: SentEmails>(store: S) -> Router {
         .method_not_allowed_fallback(method_not_allowed)
         .fallback(not_found)
         .with_state(AppState { store })
+        .merge(docs::router())
 }
 
 /// 404 for any unknown path, marked [`Unrouted`] for CORS.

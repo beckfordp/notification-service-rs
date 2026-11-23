@@ -973,6 +973,9 @@ dependencies = [
  "axum",
  "kafka-client",
  "kafka-event-consumer",
+ "opentelemetry_sdk",
+ "reqwest 0.12.28",
+ "schemars",
  "serde",
  "serde_json",
  "service-basics",
@@ -1133,6 +1136,7 @@ dependencies = [
  "portable-atomic",
  "rand 0.9.5",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]

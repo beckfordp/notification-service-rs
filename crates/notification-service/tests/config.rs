@@ -28,6 +28,8 @@ fn defaults_match_the_scala_service() {
                 password: "notification".to_owned(),
             },
             kafka_bootstrap: "localhost:9092".to_owned(),
+            user_url: "http://localhost:8084".to_owned(),
+            order_url: "http://localhost:8083".to_owned(),
             tracing: TracingConfig {
                 otlp_endpoint: None,
                 sampling_ratio: 1.0,
@@ -47,6 +49,8 @@ fn every_variable_overrides_its_default() {
         ("POSTGRES_USER", "u"),
         ("POSTGRES_PASSWORD", "p"),
         ("KAFKA_BOOTSTRAP_SERVERS", "127.0.0.1:19092"),
+        ("USER_SERVICE_URL", "http://user-service:8080"),
+        ("ORDER_SERVICE_URL", "http://order-service:8080"),
         ("OTEL_EXPORTER_OTLP_ENDPOINT", " http://127.0.0.1:4318 "),
         ("OTEL_TRACES_SAMPLER_ARG", "0.25"),
     ]))
@@ -64,6 +68,8 @@ fn every_variable_overrides_its_default() {
                 password: "p".to_owned(),
             },
             kafka_bootstrap: "127.0.0.1:19092".to_owned(),
+            user_url: "http://user-service:8080".to_owned(),
+            order_url: "http://order-service:8080".to_owned(),
             tracing: TracingConfig {
                 otlp_endpoint: Some("http://127.0.0.1:4318".to_owned()),
                 sampling_ratio: 0.25,

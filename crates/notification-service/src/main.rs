@@ -9,10 +9,12 @@
 use std::process::ExitCode;
 
 use kafka_client::supervised::ConsumerTelemetry;
+use notification_service::clients::{self, Orders, Users};
 use notification_service::config::{self, Config};
 use notification_service::consumers;
-use notification_service::email::{Audited, CarriedAddress, LoggingTransport, NoLookup};
+use notification_service::email::{Audited, CarriedAddress, LoggingTransport};
 use notification_service::ids::RandomIds;
+use notification_service::recipients::Lookups;
 use notification_service::store::PgSentEmails;
 use notification_service::{db, lifecycle, server};
 use service_basics::{environment, runtime, shutdown};
@@ -78,18 +80,32 @@ async fn serve(config: &Config, tracer: SdkTracer) -> ExitCode {
         &[("port", &config.port.to_string())],
         "notification-service starting",
     );
+    let metrics = Metrics::new(&config.service_name);
+    let lookups = match (
+        clients::resilient(tracer.clone(), &metrics),
+        clients::resilient(tracer.clone(), &metrics),
+    ) {
+        (Ok(users), Ok(orders)) => Lookups::new(
+            Users::new(&config.user_url, users),
+            Orders::new(&config.order_url, orders),
+        ),
+        (Err(error), _) | (_, Err(error)) => {
+            eprintln!("{SERVICE}: can't build the HTTP client: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
     let store = PgSentEmails::new(pool);
     let client = Audited::new(
         store.clone(),
         LoggingTransport::new(logger.clone()),
-        CarriedAddress::new(NoLookup),
+        CarriedAddress::new(lookups),
         RandomIds,
         logger.clone(),
     );
     let telemetry = ConsumerTelemetry {
         tracer,
         logger: logger.clone(),
-        metrics: Metrics::new(&config.service_name),
+        metrics,
     };
     let (stop, stopped) = watch::channel(false);
     let server = {
@@ -106,7 +122,8 @@ async fn serve(config: &Config, tracer: SdkTracer) -> ExitCode {
     let consumers = {
         let bootstrap = config.kafka_bootstrap.clone();
         async move {
-            consumers::run(&bootstrap, client, telemetry, stopped)
+            // Four supervised consumers: boxed, not held inline in `serve`.
+            Box::pin(consumers::run(&bootstrap, client, telemetry, stopped))
                 .await
                 .map_err(|error| error.to_string())
         }
